@@ -4,26 +4,48 @@ android {
     compileSdkVersion 25
     buildToolsVersion "25.0.3"
 
+    //httpclient过时添加支持
+    useLibrary 'org.apache.http.legacy'
+
+    /*-------------------------------签名信息配置-------------------------------------------*/
     signingConfigs {//签名配置
         // 1、signingConfigs代码块一定要写在buildTypes前面，
         // 2、如果defaultConfig中有用到签名的话，signingConfigs也要写在defaultConfig之前。
         // 3、签名密码写在gradle中不安全，故最好在打包上线的时候将相关代码注释掉。
-        releaseConfig {
-            storeFile file("xqkeystore.jks")
+        release {
+            storeFile file("xqkeystore.jks")//文件放于app目录下
             storePassword "xq123456"
             keyAlias "xq"
             keyPassword "xq123456"
         }
 
-        debugConfig {
+        debug {
             //密码、别名注意引号
-            storeFile file("debug.keystore")
+            storeFile file("debug.keystore")//文件放于app目录下
             storePassword "android"
             keyAlias "androiddebugkey"
             keyPassword "android"
         }
     }
 
+    /*----------------------------------自定义打包apk名称---------------------------*/
+    applicationVariants.all { variant ->
+        variant.outputs.each { output ->
+            def outputFile = output.outputFile
+            def date = new Date().format("yyyyMMddHHmm", TimeZone.getTimeZone("GMT+08"))
+            if (outputFile != null && outputFile.name.endsWith('.apk')) {
+
+                def fileName = "测试打包_"+buildType.name +
+                        "_${variant.productFlavors[0].name}_" +
+                        "V${defaultConfig.versionName}_${date}.apk"
+                //格式：测试打包_debug_baidu_V1.0_201803021541.apk
+                //     测试打包_release_baidu_V1.0_201803021541.apk
+                output.outputFile = new File(outputFile.parent, fileName)
+            }
+        }
+    }
+
+    /*----------------------------------默认配置--------------------------------------------*/
     defaultConfig {
         applicationId "com.xq.mypacage"
         minSdkVersion 15
@@ -31,25 +53,56 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+        // Enabling multidex support.
+        multiDexEnabled true
     }
 
+    /*---------------------------构建类型：如何构建不同版本的app-------------------------------*/
     buildTypes {
         release {
-            minifyEnabled false
+            //正式服务器配置
+//            buildConfigField "String", "ENVIRONMENT", "\"http://miaomiao.com/miaomiao/\""
+            //debuggable: debug模式默认为true, release模式默认是false
+            debuggable false
+            //启用Proguard，会对代码进行混淆和压缩，默认值为false,如果需要混淆需要手动配置为true;
+            minifyEnabled true
+            //移除无用的resource文件，设置minifyEnabled为true时shrinkResources 的设置才会生效
+            shrinkResources true
+            //是否启用zipAlign压缩
+            zipAlignEnabled true
+            //启用正式签名
+            signingConfig signingConfigs.release
+            //混淆文件配置
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-
-            signingConfig signingConfigs.releaseConfig
-            applicationIdSuffix ".xq" //applicationId添加后缀
+//            applicationIdSuffix ".xq" //applicationId添加后缀，用于修改applicationId
         }
 
         debug {
-            signingConfig signingConfigs.debugConfig
+            //测试服务器配置
+//            buildConfigField "String", "ENVIRONMENT", "\"http://110.11.11.00/miaomiao/\""
+            debuggable true//debuggable: debug模式默认为true, release模式默认是false
+            minifyEnabled false//不启用Proguard
+            zipAlignEnabled true//是否启用zipAlign压缩
+            shrinkResources false//是否清理无用资源,依赖于minifyEnabled
+            signingConfig signingConfigs.debug //启用测试签名
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
 
+    /*-------------------------------目录约定-------------------------------------------*/
+    sourceSets {
+        main {
+            //在src/main文件中新建 jniLibs文件夹，将.so文件都拷贝进去,不需要此句
+            //so文件放在libs时才使用
+            jniLibs.srcDirs = ['libs']
+        }
+    }
+
+    /*--------------------------------配置多渠道的打包---------------------------------*/
     productFlavors {//多渠道打包配置
         /*写法一：*/
-        kuan {
+        kuan {//UMENG_CHANNEL_VALUE为自定义名字
             manifestPlaceholders = [UMENG_CHANNEL_VALUE: "kuan"]
         }
         xiaomi {
@@ -77,9 +130,13 @@ android {
 //        }
     }
 
-
+    dexOptions {
+        preDexLibraries = false//禁用预编译
+        javaMaxHeapSize "4g"   //加大java堆内存
+    }
 }
 
+/*-------------------------------------依赖配置-------------------------------------*/
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
@@ -88,5 +145,8 @@ dependencies {
     compile 'com.android.support:appcompat-v7:25.3.1'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     testCompile 'junit:junit:4.12'
-//    compile files('libs/umeng-analytics-v5.5.3.jar')
+
+    //解决65535
+    compile 'com.android.support:multidex:1.0.1'
+
 }
