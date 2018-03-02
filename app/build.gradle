@@ -1,0 +1,92 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion "25.0.3"
+
+    signingConfigs {//签名配置
+        // 1、signingConfigs代码块一定要写在buildTypes前面，
+        // 2、如果defaultConfig中有用到签名的话，signingConfigs也要写在defaultConfig之前。
+        // 3、签名密码写在gradle中不安全，故最好在打包上线的时候将相关代码注释掉。
+        releaseConfig {
+            storeFile file("xqkeystore.jks")
+            storePassword "xq123456"
+            keyAlias "xq"
+            keyPassword "xq123456"
+        }
+
+        debugConfig {
+            //密码、别名注意引号
+            storeFile file("debug.keystore")
+            storePassword "android"
+            keyAlias "androiddebugkey"
+            keyPassword "android"
+        }
+    }
+
+    defaultConfig {
+        applicationId "com.xq.mypacage"
+        minSdkVersion 15
+        targetSdkVersion 25
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+            signingConfig signingConfigs.releaseConfig
+            applicationIdSuffix ".xq" //applicationId添加后缀
+        }
+
+        debug {
+            signingConfig signingConfigs.debugConfig
+        }
+    }
+
+    productFlavors {//多渠道打包配置
+        /*写法一：*/
+        kuan {
+            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "kuan"]
+        }
+        xiaomi {
+            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "xiaomi"]
+        }
+        qh360 {
+            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "qh360"]
+        }
+        baidu {
+            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "baidu"]
+        }
+        wandoujia {
+            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "wandoujia"]
+        }
+
+        /*写法二：*/
+//        kuan {}
+//        xiaomi {}
+//        qh360 {}
+//        baidu {}
+//        wandoujia {}
+//
+//        productFlavors.all {
+//            flavor -> flavor.manifestPlaceholders = [UMENG_CHANNEL_VALUE: name]
+//        }
+    }
+
+
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    compile 'com.android.support:appcompat-v7:25.3.1'
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    testCompile 'junit:junit:4.12'
+//    compile files('libs/umeng-analytics-v5.5.3.jar')
+}
