@@ -40,7 +40,8 @@ android {
                         "V${defaultConfig.versionName}_${date}.apk"
                 //格式：测试打包_debug_baidu_V1.0_201803021541.apk
                 //     测试打包_release_baidu_V1.0_201803021541.apk
-                output.outputFile = new File(outputFile.parent, fileName)
+//                output.outputFile = new File(outputFile.parent, fileName)
+                output.outputFile = new File("C:\\Users\\lenovo\\Desktop", fileName)
             }
         }
     }
