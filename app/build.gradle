@@ -35,10 +35,11 @@ android {
             def date = new Date().format("yyyyMMddHHmm", TimeZone.getTimeZone("GMT+08"))
             if (outputFile != null && outputFile.name.endsWith('.apk')) {
 
-                def fileName = "mynewapp_"+buildType.name +
-                        "_${variant.productFlavors[0].name}" +
-//                        "_V${defaultConfig.versionName}" +
-//                        "_${date}" +
+                def fileName = "mynewapp_"+
+//                        buildType.name +                          //构建debug/release
+//                        "_${variant.productFlavors[0].name}" +    //渠道
+//                        "_V${defaultConfig.versionName}" +        //版本
+//                        "_${date}" +                              //日期
                         ".apk"
                 //格式：测试打包_debug_baidu_V1.0_201803021541.apk
                 //     测试打包_release_baidu_V1.0_201803021541.apk
