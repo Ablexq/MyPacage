@@ -35,8 +35,8 @@ android {
             def date = new Date().format("yyyyMMddHHmm", TimeZone.getTimeZone("GMT+08"))
             if (outputFile != null && outputFile.name.endsWith('.apk')) {
 
-                def fileName = "mynewapp_"+
-//                        buildType.name +                          //构建debug/release
+                def fileName = "mynewapp" +
+//                        "_"+buildType.name +                      //构建debug/release
 //                        "_${variant.productFlavors[0].name}" +    //渠道
 //                        "_V${defaultConfig.versionName}" +        //版本
 //                        "_${date}" +                              //日期
